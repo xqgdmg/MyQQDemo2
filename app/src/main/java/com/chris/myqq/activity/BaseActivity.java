@@ -57,14 +57,18 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         LogUtil.logD(getClass().getName(), msg);
     }
 
-    //创建一个progressdialog
+    /**
+     * 创建一个progressdialog
+     */
     protected ProgressDialog makeDialog(String msg) {
         ProgressDialog dialog = new ProgressDialog(this);
         dialog.setMessage(msg);
         return dialog;
     }
-//    Handler handler = new Handler();
-    //弹出toast
+
+    /**
+     * 弹出toast
+     */
     protected void toast(final String msg) {
 //        if(Looper.myLooper()==getMainLooper())
         runOnUiThread(new Runnable() {
@@ -75,6 +79,9 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         });
     }
 
+    /**
+     * 所有点击事件
+     */
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.back) {
@@ -84,10 +91,14 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         }
     }
 
-    //处理除了back按钮外的点击事件
+    /**
+     * 处理除了back按钮外的点击事件
+     */
     protected abstract void processClick(View v);
 
-    //跳转到新界面
+    /**
+     * 跳转到新界面
+     */
     protected void startNewActivity(Class clazz, boolean finishCurrent) {
         Intent intent = new Intent(this, clazz);
         startActivity(intent);
@@ -96,6 +107,9 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         }
     }
 
+    /**
+     * 自动从 Application 中移除
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
