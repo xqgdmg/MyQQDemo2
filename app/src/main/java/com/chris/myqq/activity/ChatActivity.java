@@ -1,5 +1,6 @@
 package com.chris.myqq.activity;
 
+import android.annotation.SuppressLint;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -132,6 +133,7 @@ public class ChatActivity extends BaseActivity implements TextWatcher, TextView.
             public void onFocusChange(View v, boolean hasFocus) {
                 //获取变化后的列表高度
                 chat_recycleView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @SuppressLint("NewApi")
                     @Override
                     public void onGlobalLayout() {
                         //移除监听
@@ -149,6 +151,7 @@ public class ChatActivity extends BaseActivity implements TextWatcher, TextView.
             public void onClick(View v) {
                 System.out.println("执行了点击事件");
                 chat_recycleView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @SuppressLint("NewApi")
                     @Override
                     public void onGlobalLayout() {
                         chat_recycleView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
