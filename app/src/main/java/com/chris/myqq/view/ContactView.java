@@ -11,6 +11,7 @@ import com.chris.myqq.adapter.ContactAdapter;
 
 /**
  * Created by ThinkPad on 2016/8/12.
+ * 全部联系人
  */
 public class ContactView extends RelativeLayout {
 
