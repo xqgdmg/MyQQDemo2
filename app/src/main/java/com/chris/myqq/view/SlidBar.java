@@ -69,7 +69,7 @@ public class SlidBar extends View {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
-                //改变背景颜色
+                //改变背景颜色，整个 SlidBar
                 setBackgroundResource(R.drawable.shape_slibar);
                 performTouch(event);
                 break;
@@ -102,7 +102,7 @@ public class SlidBar extends View {
         //获取当前要显示的字母
         String name = names[index];
         //显示toast字母
-        RelativeLayout parent = (RelativeLayout) getParent();//获取父容器
+        RelativeLayout parent = (RelativeLayout) getParent();//获取父容器（通过父亲找兄弟）
         if(contact_toast==null) {
             contact_toast = (TextView) parent.findViewById(R.id.contac_toast);
         }
@@ -110,9 +110,9 @@ public class SlidBar extends View {
         //显示toast
         contact_toast.setVisibility(VISIBLE);
 
-//处理列表section位置
+        //处理列表section位置
 
-        //初始化listview
+        //初始化listview（通过父亲找兄弟）
         if(contact_listView==null) {
             contact_listView = (ListView) parent.findViewById(R.id.contact_listView);
         }

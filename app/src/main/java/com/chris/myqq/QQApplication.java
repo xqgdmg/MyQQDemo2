@@ -77,6 +77,7 @@ public class QQApplication extends Application {
                     return processName;
                 }
             } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return processName;
