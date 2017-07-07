@@ -106,12 +106,7 @@ public class AudioRecoderUtils {
         mMediaRecorder.setPreviewDisplay(null);
         try {
             mMediaRecorder.stop();
-        } catch (IllegalStateException e) {
-            Log.d("stopRecord", e.getMessage());
-        } catch (RuntimeException e) {
-            Log.d("stopRecord", e.getMessage());
         } catch (Exception e) {
-            Log.d("stopRecord", e.getMessage());
         }
         mMediaRecorder.reset();
         mMediaRecorder.release();

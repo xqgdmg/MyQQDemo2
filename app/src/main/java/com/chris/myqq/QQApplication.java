@@ -2,6 +2,7 @@ package com.chris.myqq;
 
 import android.app.ActivityManager;
 import android.app.Application;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.util.DisplayMetrics;
 
@@ -36,15 +37,21 @@ public class QQApplication extends Application {
      * 屏幕密度
      */
     public static float screenDensity;
+    private static Context mContext;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        mContext = getApplicationContext();
         //初始化bmob
         initBmob();
         //初始化环信
         initHuanXin();
         initScreenSize();
+    }
+
+    public static Context getContext(){
+        return mContext;
     }
 
     /**

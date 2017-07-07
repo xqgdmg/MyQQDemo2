@@ -6,8 +6,8 @@ android {
 
     defaultConfig {
         applicationId "com.chris.myqqdemo2"
-        minSdkVersion 15
-        targetSdkVersion 23
+        minSdkVersion 17
+        targetSdkVersion 23 // 22不用处理一堆权限，不会弹框询问
         versionCode 1
         versionName "1.0"
     }

@@ -1,11 +1,15 @@
 package com.chris.myqq.manager;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.os.Build;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -20,7 +24,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.chris.myqq.QQApplication;
 import com.chris.myqq.R;
 import com.chris.myqq.entity.MessageInfo;
 import com.chris.myqq.factory.PopupWindowFactory;
@@ -206,13 +212,22 @@ public class EmotionInputDetector {
             @Override
             public void onClick(View v) {
                 Log.e("haha","voiceButton");
-                hideEmotionLayout(false);
-                hideSoftInput();
-                mVoiceText.setVisibility(mVoiceText.getVisibility() == View.GONE ? View.VISIBLE : View.GONE);
-                mEditText.setVisibility(mVoiceText.getVisibility() == View.GONE ? View.VISIBLE : View.GONE);
+                if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+//                    ActivityCompat.requestPermissions(mActivity,new String[]{Manifest.permission.CAMERA},123);
+                    Toast.makeText(mActivity,"申请录音权限被拒绝，请重新进入页面并允许app录音。",Toast.LENGTH_SHORT).show();
+                } else {
+                    recordVoice();
+                }
             }
         });
         return this;
+    }
+
+    private void recordVoice() {
+        hideEmotionLayout(false);
+        hideSoftInput();
+        mVoiceText.setVisibility(mVoiceText.getVisibility() == View.GONE ? View.VISIBLE : View.GONE);
+        mEditText.setVisibility(mVoiceText.getVisibility() == View.GONE ? View.VISIBLE : View.GONE);
     }
 
     public EmotionInputDetector bindToVoiceText(TextView voiceText) {

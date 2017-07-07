@@ -1,12 +1,18 @@
 package com.chris.myqq.activity;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -16,13 +22,16 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.chris.myqq.R;
 import com.chris.myqq.adapter.CommonFragmentPagerAdapter;
 import com.chris.myqq.fragment.ChatEmotionFragment;
 import com.chris.myqq.fragment.ChatFunctionFragment;
 import com.chris.myqq.manager.EmotionInputDetector;
+import com.chris.myqq.util.GlobalOnItemClickManagerUtils;
 import com.chris.myqq.view.NoScrollViewPager;
+import com.chris.myqq.view.StateButton;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
@@ -41,7 +50,7 @@ import com.chris.myqq.listener.MymessageListener;
 public class ChatActivity extends BaseActivity implements TextWatcher, TextView.OnEditorActionListener {
 
     private String chat_to;
-    private Button btnSend;
+    private StateButton btnSend;
     private EditText etChat;
     private RecyclerView mRecycleView;
     private ImageView ivAdd;
@@ -49,7 +58,7 @@ public class ChatActivity extends BaseActivity implements TextWatcher, TextView.
     private ArrayList<EMMessage> messages = new ArrayList<EMMessage>();
     private ChatAdapter chatAdapter;
     private MymessageListener listener;
-    private Button btnMore;
+    private ImageView btnMore;
     private EmotionInputDetector mDetector;
     private ArrayList<Fragment> fragments;
     private ChatEmotionFragment chatEmotionFragment;
@@ -58,7 +67,7 @@ public class ChatActivity extends BaseActivity implements TextWatcher, TextView.
     private NoScrollViewPager viewpager;
     private RelativeLayout emotionLayout;
     private ImageView ivEmoji;
-    private Button btnVoice;
+    private ImageView ivVoice;
     private TextView tvVoiceText;
 
     @Override
@@ -190,13 +199,13 @@ public class ChatActivity extends BaseActivity implements TextWatcher, TextView.
         //设置成列表展示
         mRecycleView.setLayoutManager(new LinearLayoutManager(this));
         etChat = (EditText) findViewById(R.id.chat_edit);
-        btnSend = (Button) findViewById(R.id.chat_send);
-        btnMore = (Button) findViewById(R.id.btn_more);
+        btnSend = (StateButton) findViewById(R.id.chat_send);
+        btnMore = (ImageView) findViewById(R.id.btn_more);
 
         viewpager = (NoScrollViewPager) findViewById(R.id.viewpager);
         emotionLayout = (RelativeLayout) findViewById(R.id.emotion_layout);
         ivEmoji = (ImageView) findViewById(R.id.iv_face_checked);
-        btnVoice = (Button) findViewById(R.id.btn_set_mode_voice);
+        ivVoice = (ImageView) findViewById(R.id.btn_set_mode_voice);
         tvVoiceText = (TextView) findViewById(R.id.voiceText);
 
         performEmoji();
@@ -215,6 +224,7 @@ public class ChatActivity extends BaseActivity implements TextWatcher, TextView.
         viewpager.setAdapter(chatAdapter2);
         viewpager.setCurrentItem(0);
 
+         // 绑定各种 ui
         mDetector = EmotionInputDetector.with(this)
                 .setEmotionView(emotionLayout) // 表情的 ViewPager 的父布局-- RelativeLayout
                 .setViewPager(viewpager) // 没有高度,gone，表情的 ViewPager
@@ -223,9 +233,38 @@ public class ChatActivity extends BaseActivity implements TextWatcher, TextView.
                 .bindToEmotionButton(ivEmoji) // 点击显示表情
                 .bindToAddButton(btnMore) // 文件按钮
                 .bindToSendButton(btnSend) // 发送按钮
-                .bindToVoiceButton(btnVoice) // 语音按钮
+                .bindToVoiceButton(ivVoice) // 语音按钮
                 .bindToVoiceText(tvVoiceText) // 语音文本
                 .build();
+
+         // 点击表情的时候，绑定 EditText（让表情显示到 editText）
+        GlobalOnItemClickManagerUtils globalOnItemClickListener = GlobalOnItemClickManagerUtils.getInstance(this);
+        globalOnItemClickListener.attachToEditText(etChat);
+
+         // 在这里申请录音的权限，因为在 Activity 或者是 Fragment 中才方便申请权限
+        requestVoicePermissions();
+
+    }
+
+    /*
+     * 申请录音权限
+     */
+    private void requestVoicePermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.RECORD_AUDIO},123);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 123) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.e("haha","录音权限申请成功！");
+            } else {
+                Log.e("haha","录音权限申请失败！");
+            }
+        }
     }
 
     @Override
