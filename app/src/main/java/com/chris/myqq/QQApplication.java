@@ -3,6 +3,7 @@ package com.chris.myqq;
 import android.app.ActivityManager;
 import android.app.Application;
 import android.content.pm.PackageManager;
+import android.util.DisplayMetrics;
 
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMOptions;
@@ -23,6 +24,18 @@ public class QQApplication extends Application {
 
     // Activity 集合
     private ArrayList<BaseActivity> activities = new ArrayList<BaseActivity>();
+    /**
+     * 屏幕宽度
+     */
+    public static int screenWidth;
+    /**
+     * 屏幕高度
+     */
+    public static int screenHeight;
+    /**
+     * 屏幕密度
+     */
+    public static float screenDensity;
 
     @Override
     public void onCreate() {
@@ -31,6 +44,17 @@ public class QQApplication extends Application {
         initBmob();
         //初始化环信
         initHuanXin();
+        initScreenSize();
+    }
+
+    /**
+     * 初始化当前设备屏幕宽高
+     */
+    private void initScreenSize() {
+        DisplayMetrics curMetrics = getApplicationContext().getResources().getDisplayMetrics();
+        screenWidth = curMetrics.widthPixels;
+        screenHeight = curMetrics.heightPixels;
+        screenDensity = curMetrics.density;
     }
 
     /**

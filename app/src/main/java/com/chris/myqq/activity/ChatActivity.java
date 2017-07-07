@@ -1,6 +1,7 @@
 package com.chris.myqq.activity;
 
 import android.annotation.SuppressLint;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -13,9 +14,15 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.chris.myqq.R;
+import com.chris.myqq.adapter.CommonFragmentPagerAdapter;
+import com.chris.myqq.fragment.ChatEmotionFragment;
+import com.chris.myqq.fragment.ChatFunctionFragment;
+import com.chris.myqq.manager.EmotionInputDetector;
+import com.chris.myqq.view.NoScrollViewPager;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
@@ -27,27 +34,38 @@ import com.chris.myqq.listener.MymessageListener;
 
 
 /**
- * 聊天
+ * 聊天页面
  * 1 加载聊天记录
  * 2 监听消息
  */
 public class ChatActivity extends BaseActivity implements TextWatcher, TextView.OnEditorActionListener {
 
     private String chat_to;
-    private Button chat_send;
-    private EditText chat_edit;
-    private RecyclerView chat_recycleView;
-    private ImageView add;
-    private TextView my_title;
+    private Button btnSend;
+    private EditText etChat;
+    private RecyclerView mRecycleView;
+    private ImageView ivAdd;
+    private TextView tvTitle;
     private ArrayList<EMMessage> messages = new ArrayList<EMMessage>();
-    private ChatAdapter adapter;
+    private ChatAdapter chatAdapter;
     private MymessageListener listener;
+    private Button btnMore;
+    private EmotionInputDetector mDetector;
+    private ArrayList<Fragment> fragments;
+    private ChatEmotionFragment chatEmotionFragment;
+    private ChatFunctionFragment chatFunctionFragment;
+    private CommonFragmentPagerAdapter chatAdapter2;
+    private NoScrollViewPager viewpager;
+    private RelativeLayout emotionLayout;
+    private ImageView ivEmoji;
+    private Button btnVoice;
+    private TextView tvVoiceText;
 
     @Override
     protected void initData() {
         //获取当前要聊天的对象
         chat_to = getIntent().getStringExtra("chat_to");
-        my_title.setText("正在与" + chat_to + "聊天");
+        tvTitle.setText("正在与" + chat_to + "聊天");
 
         //加载聊天消息
         loadMessages();
@@ -106,56 +124,57 @@ public class ChatActivity extends BaseActivity implements TextWatcher, TextView.
         messages.clear();
         messages.addAll(loadMessages);
         //进行更新
-        adapter.notifyDataSetChanged();
+        chatAdapter.notifyDataSetChanged();
         //移动到最后一条
-        chat_recycleView.scrollToPosition(messages.size() - 1);
+        mRecycleView.scrollToPosition(messages.size() - 1);
     }
 
     @Override
     protected void initListener() {
-        chat_edit.addTextChangedListener(this);
-        chat_edit.setOnEditorActionListener(this);
-        chat_send.setOnClickListener(this);
-        adapter = new ChatAdapter(messages);
-        chat_recycleView.setAdapter(adapter);
+        etChat.addTextChangedListener(this);
+        etChat.setOnEditorActionListener(this);
+        btnSend.setOnClickListener(this);
+        chatAdapter = new ChatAdapter(messages);
+        mRecycleView.setAdapter(chatAdapter);
 
-        chat_recycleView.post(new Runnable() {
+        mRecycleView.post(new Runnable() {
             @Override
             public void run() {
-                int height = chat_recycleView.getHeight();
+                int height = mRecycleView.getHeight();
                 System.out.println("变化前的高度：" + height);
             }
         });
 
         //添加输入框焦点变化监听
-        chat_edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        etChat.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 //获取变化后的列表高度
-                chat_recycleView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                mRecycleView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @SuppressLint("NewApi")
                     @Override
                     public void onGlobalLayout() {
                         //移除监听
-                        chat_recycleView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                        System.out.println("列表变化后的高度：" + chat_recycleView.getHeight());
+                        mRecycleView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        System.out.println("列表变化后的高度：" + mRecycleView.getHeight());
                         //列表滑动到最后一条
-                        chat_recycleView.scrollToPosition(messages.size() - 1);
+                        mRecycleView.scrollToPosition(messages.size() - 1);
                     }
                 });
             }
         });
+
         //设置输入框点击事件
-        chat_edit.setOnClickListener(new View.OnClickListener() {
+        etChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 System.out.println("执行了点击事件");
-                chat_recycleView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                mRecycleView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @SuppressLint("NewApi")
                     @Override
                     public void onGlobalLayout() {
-                        chat_recycleView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                        chat_recycleView.scrollToPosition(messages.size() - 1);
+                        mRecycleView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        mRecycleView.scrollToPosition(messages.size() - 1);
                     }
                 });
             }
@@ -164,14 +183,49 @@ public class ChatActivity extends BaseActivity implements TextWatcher, TextView.
 
     @Override
     protected void initView() {
-        my_title = (TextView) findViewById(R.id.my_title);
-        add = (ImageView) findViewById(R.id.add);
-        add.setVisibility(View.INVISIBLE);
-        chat_recycleView = (RecyclerView) findViewById(R.id.chat_recycleView);
+        tvTitle = (TextView) findViewById(R.id.my_title);
+        ivAdd = (ImageView) findViewById(R.id.add);
+        ivAdd.setVisibility(View.INVISIBLE);
+        mRecycleView = (RecyclerView) findViewById(R.id.chat_recycleView);
         //设置成列表展示
-        chat_recycleView.setLayoutManager(new LinearLayoutManager(this));
-        chat_edit = (EditText) findViewById(R.id.chat_edit);
-        chat_send = (Button) findViewById(R.id.chat_send);
+        mRecycleView.setLayoutManager(new LinearLayoutManager(this));
+        etChat = (EditText) findViewById(R.id.chat_edit);
+        btnSend = (Button) findViewById(R.id.chat_send);
+        btnMore = (Button) findViewById(R.id.btn_more);
+
+        viewpager = (NoScrollViewPager) findViewById(R.id.viewpager);
+        emotionLayout = (RelativeLayout) findViewById(R.id.emotion_layout);
+        ivEmoji = (ImageView) findViewById(R.id.iv_face_checked);
+        btnVoice = (Button) findViewById(R.id.btn_set_mode_voice);
+        tvVoiceText = (TextView) findViewById(R.id.voiceText);
+
+        performEmoji();
+    }
+
+    /*
+     * 添加表情
+     */
+    private void performEmoji() {
+        fragments = new ArrayList<>();
+        chatEmotionFragment = new ChatEmotionFragment();
+        fragments.add(chatEmotionFragment);
+        chatFunctionFragment = new ChatFunctionFragment();
+        fragments.add(chatFunctionFragment);
+        chatAdapter2 = new CommonFragmentPagerAdapter(getSupportFragmentManager(), fragments);
+        viewpager.setAdapter(chatAdapter2);
+        viewpager.setCurrentItem(0);
+
+        mDetector = EmotionInputDetector.with(this)
+                .setEmotionView(emotionLayout) // 表情的 ViewPager 的父布局-- RelativeLayout
+                .setViewPager(viewpager) // 没有高度,gone，表情的 ViewPager
+                .bindToContent(mRecycleView) // 消息列表
+                .bindToEditText(etChat) // 输入框
+                .bindToEmotionButton(ivEmoji) // 点击显示表情
+                .bindToAddButton(btnMore) // 文件按钮
+                .bindToSendButton(btnSend) // 发送按钮
+                .bindToVoiceButton(btnVoice) // 语音按钮
+                .bindToVoiceText(tvVoiceText) // 语音文本
+                .build();
     }
 
     @Override
@@ -194,16 +248,22 @@ public class ChatActivity extends BaseActivity implements TextWatcher, TextView.
 
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+        if (s.length() > 0){
+            btnMore.setVisibility(View.GONE);
+            btnSend.setVisibility(View.VISIBLE);
+        }else {
+            btnSend.setVisibility(View.GONE);
+            btnMore.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
     public void afterTextChanged(Editable s) {
         //当前是否内容为空
         if (TextUtils.isEmpty(s.toString().trim())) {
-            chat_send.setEnabled(false);
+            btnSend.setEnabled(false);
         } else {
-            chat_send.setEnabled(true);
+            btnSend.setEnabled(true);
         }
     }
 
@@ -211,7 +271,7 @@ public class ChatActivity extends BaseActivity implements TextWatcher, TextView.
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if (v.getId() == R.id.chat_edit && actionId == EditorInfo.IME_ACTION_SEND) {
-            String msg = chat_edit.getText().toString().trim();
+            String msg = etChat.getText().toString().trim();
             if (TextUtils.isEmpty(msg)) {
                 toast("不能发送空消息");
             } else {
@@ -224,7 +284,7 @@ public class ChatActivity extends BaseActivity implements TextWatcher, TextView.
     //发送消息
     private void sendMsg() {
         toast("执行发送消息操作");
-        String msg = chat_edit.getText().toString().trim();
+        String msg = etChat.getText().toString().trim();
 
         //创建一条文本消息，content为消息文字内容，toChatUsername为对方用户或者群聊的id，后文皆是如此
         EMMessage message = EMMessage.createTxtSendMessage(msg, chat_to);
@@ -253,11 +313,11 @@ public class ChatActivity extends BaseActivity implements TextWatcher, TextView.
         //添加到消息集合中
         messages.add(message);
 
-        adapter.notifyDataSetChanged();
+        chatAdapter.notifyDataSetChanged();
         //滚动到最后一条消息
-        chat_recycleView.scrollToPosition(messages.size() - 1);
+        mRecycleView.scrollToPosition(messages.size() - 1);
         //清空输入框
-        chat_edit.getText().clear();
+        etChat.getText().clear();
         //发送消息
         EMClient.getInstance().chatManager().sendMessage(message);
     }
@@ -266,7 +326,7 @@ public class ChatActivity extends BaseActivity implements TextWatcher, TextView.
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                adapter.notifyDataSetChanged();
+                chatAdapter.notifyDataSetChanged();
             }
         });
     }

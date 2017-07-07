@@ -19,6 +19,10 @@ import com.chris.myqq.util.ToastUtil;
 public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener {
     protected String KEY_USERNAME="username";
     protected String KEY_PASSWORD="password";
+
+    /*
+     * 处理所有子类的 onCreate，子类不需要写 onCreate 方法
+     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
