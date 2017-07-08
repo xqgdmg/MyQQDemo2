@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
@@ -69,7 +70,7 @@ public class ContactFragment extends BaseFragment implements SwipeRefreshLayout.
     private void loadContactsFromDB() {
         //contacts集合清空
         contacts.clear();
-        contacts.addAll(DBUtil.queryContact(getContext(), currentUser));
+        contacts.addAll(DBUtil.queryAllContacts(getContext(), currentUser));
         //排序
         sort();
         //刷新列表
@@ -98,6 +99,7 @@ public class ContactFragment extends BaseFragment implements SwipeRefreshLayout.
      * 并加入到数据库，更新数据库的联系人
      */
     public void loadContactsFromServer() {
+        Log.e("chris","loadContactsFromServer");
         ThreadUtil.runOnNewThread(new Runnable() {
             @Override
             public void run() {
